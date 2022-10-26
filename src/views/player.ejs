@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.21.1/dist/bootstrap-table.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js" integrity="sha512-aVKKRRi/Q/YV+4mjoKBsE4x3H+BkegoM/em46NNlCqNTmUYADjBbeNefNxYV7giUp0VxICtqdrbqU7iVaeZNXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/bootstrap-table@1.21.1/dist/bootstrap-table.min.js"></script>
+    <title><%= title %></title>
+    <style>
+      .center {
+        text-align: center;
+      }
+    </style>
+</head>
+<body>
+    <h1 class="container text-center">Your player</h1>
+    <h2 class = "container text-center">Ajouter un joueur</h2>
+    <form class="container">
+      <div class="form-row  ">
+        <div class="col">
+          <input type="number" class="form-control cente" id="gen" name = "gen" placeholder="Général">
+        </div>
+        <div class="col">
+          <input type="text" class="form-control" id="name" name = "name" placeholder="Nom">
+        </div>
+        <div class="col">
+          <input type="number" class="form-control" id="age" name = "age" placeholder="Age">
+        </div>
+        <div class="col">
+          <input type="text" class="form-control" id="club" name = "club" placeholder="Club">
+        </div>
+        <div class="col">
+          <input type="number" class="form-control" id="price" name = "price" placeholder="Price">
+        </div>
+      </div>
+    </form>
+    <div class="center">
+      <button type="button" class="btn btn-primary" onclick="sendPlayer()"> Ajouter </button>
+    </div>
+    <table data-toggle="table" class="table container" data-pagination="true" data-page-size="20" id="table-id" >
+        <thead class="thead-dark">
+          <tr>
+            <th data-field="gen" >Général</th>
+            <th data-field="name">Nom</th>
+            <th data-field="age">Age</th>
+            <th data-field="club">Club</th>
+            <th data-field="price">Price</th>
+
+          </tr>
+        </thead>
+        <tbody>
+
+          <% players.forEach(function(player) { %>
+            <tr>
+              <th scope="row"><%= player.gen %></th>
+              <td><%= player.name %></td>
+              <td><%= player.age %></td>
+              <td><%= player.club %></td>
+              <td><%= player.price %></td>
+              <td>
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target=".bd-example-modal-lg" onclick="setUpUpdate('<%= player._id %>')">Modifier</button>
+                  <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                      <div class="modal-content">
+                        <form class="container">
+                          <div class="form-row  ">
+                            <input type="hidden" id="id_update" name="id_update">
+                            <div class="col">
+                              <input type="number" class="form-control cente" id="gen_update" name = "gen_update" placeholder="Général">
+                            </div>
+                            <div class="col">
+                              <input type="text" class="form-control" id="name_update" name = "name_update" placeholder="Nom">
+                            </div>
+                            <div class="col">
+                              <input type="number" class="form-control" id="age_update" name = "age_update" placeholder="Age">
+                            </div>
+                            <div class="col">
+                              <input type="text" class="form-control" id="club_update" name = "club_update" placeholder="Club">
+                            </div>
+                            <div class="col">
+                              <input type="number" class="form-control" id="price_update" name = "price_update" placeholder="Price">
+                            </div>
+                            <div class="center">
+                              <button type="button" class="btn btn-primary" onclick="upPlayer()"> Modifier </button>
+                            </div>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                <button type="button" class="btn btn-primary" onclick="deletePlayer('<%= player._id %>')"> Supprimer </button>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    <script>
+
+      const $table = $('table')
+      let players;
+      document.addEventListener("DOMContentLoaded", async function(event) { 
+        const playersFetch = await fetch("/api/player");
+        players = await playersFetch.json();
+        
+        $table.bootstrapTable("load",players)
+      });
+
+      function sendPlayer() {
+        console.log(document.getElementById("gen").value)
+        const gen = document.getElementById("gen").value;
+        const name = document.getElementById("name").value;
+        const age = document.getElementById("age").value;
+        const club = document.getElementById("club").value;
+        const price = document.getElementById("price").value;
+        const body = {gen: gen, name: name, age: age, club: club, price: price}
+        fetch("/api/player", {
+            method: "POST",
+            body: JSON.stringify(body),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            }
+
+        })
+        .then((response) =>{
+            return response.json()
+        })
+        .then((data) => {
+            document.location.href = '/player'
+        })
+      }
+      function setUpUpdate(id){
+        console.log(id)
+        const player = players.filter((p) => p._id === id)[0];
+
+        console.log("le player a modifié",player);
+
+        document.getElementById("id_update").value = player._id;
+        document.getElementById("gen_update").value = player.gen;
+        document.getElementById("name_update").value = player.name;
+        document.getElementById("age_update").value = player.age;
+        document.getElementById("club_update").value = player.club;
+        document.getElementById("price_update").value = player.price;
+
+      }
+      function upPlayer() {
+        const id = document.getElementById("id_update").value; 
+        const gen = document.getElementById("gen_update").value;
+        const name = document.getElementById("name_update").value;
+        const age = document.getElementById("age_update").value;
+        const club = document.getElementById("club_update").value;
+        const price = document.getElementById("price_update").value;
+        const body = {gen: gen, name: name, age: age, club: club, price: price}
+        fetch("/api/player/"+id, {
+            method: "PATCH",
+            body: JSON.stringify(body),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            }
+
+        })
+        .then((response) =>{
+            return response.json()
+        })
+        .then((data) => {
+            document.location.href = '/player'
+        })
+      
+      }
+      function deletePlayer(id){    
+        fetch("/api/player/"+id, {
+            method: "DELETE",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            }
+
+        })
+        .then((response) =>{
+            document.location.href = '/player'
+        })
+      }
+      
+    </script>
+</body>
+</html>
